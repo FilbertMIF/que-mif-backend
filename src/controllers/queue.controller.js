@@ -1,6 +1,106 @@
 const response = require('../utils/response')
 const { poolPromise } = require('../config/db')
 
+//Services
+exports.insertService = async (req, res) => {
+    const { Code, Name, Description, IsActive } = req.body
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('Code', Code)
+        request.input('Name', Name)
+        request.input('Description', Description)
+        request.input('IsActive', IsActive)
+
+        const result = await request.execute('sp_QueMIF_InsertService')
+
+        response.success(res, {
+            serviceId: result.recordsets[0][0].ServiceID
+        })
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+
+exports.getServices = async (req, res) => {
+    const {
+        CurrentPage = 1,
+        PageSize = 10,
+        Code,
+        Name,
+        IsActive
+    } = req.query
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('CurrentPage', Number(CurrentPage))
+        request.input('PageSize', Number(PageSize))
+        request.input('Code', Code || null)
+        request.input('Name', Name || null)
+        request.input('IsActive', IsActive !== undefined ? Number(IsActive) : null)
+
+        const result = await request.execute('sp_QueMIF_GetServices')
+
+        response.success(res, {
+            data: result.recordsets[0],
+            pagination: {
+                currentPage: Number(CurrentPage),
+                pageSize: Number(PageSize),
+                total: result.recordsets[0][0]?.Total || 0
+            }
+        })
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+
+exports.updateService = async (req, res) => {
+    const ServiceID = req.params.id
+    const { Code, Name, Description, IsActive } = req.body
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('ServiceID', ServiceID)
+        request.input('Code', Code || null)
+        request.input('Name', Name || null)
+        request.input('Description', Description || null)
+        request.input('IsActive', IsActive !== undefined ? IsActive : null)
+
+        const result = await request.execute('sp_QueMIF_UpdateService')
+
+        response.success(res, {
+            affected: result.recordsets[0][0].Affected
+        })
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+
+exports.deleteService = async (req, res) => {
+    const ServiceID = req.params.id
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('ServiceID', ServiceID)
+
+        const result = await request.execute('sp_QueMIF_DeleteService')
+
+        response.success(res, {
+            affected: result.recordsets[0][0].Affected
+        })
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+
 //Counters
 exports.insertCounter = async (req, res) => {
     const { Name, IsActive, BranchID } = req.body

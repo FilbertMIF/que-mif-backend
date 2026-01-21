@@ -2,6 +2,12 @@ const express = require('express')
 const router = express.Router()
 const controller = require('../controllers/queue.controller')
 
+// Services
+router.get('/services', controller.getServices)
+router.post('/services', controller.insertService)
+router.patch('/services/:id', controller.updateService)
+router.delete('/services/:id', controller.deleteService)
+
 // Counters
 router.get('/counters', controller.getCounters)
 router.post('/counters', controller.insertCounter)
