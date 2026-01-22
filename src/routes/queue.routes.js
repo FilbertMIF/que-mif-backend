@@ -19,9 +19,9 @@ router.post('/tickets', controller.insertTicket)
 router.get('/tickets', controller.getTickets)
 
 // CS Actions
-router.get('/tickets/:id/call', controller.callTicket)
+router.post('/tickets/:id/call', controller.callTicket)
 router.post('/tickets/:id/assign', controller.assignTicket)
 router.post('/tickets/:id/hold', controller.holdTicket)
 router.post('/tickets/:id/cancel', controller.cancelTicket)
-router.get('/tickets/:id/complete', controller.completeTicket)
+router.post('/tickets/:id/complete', controller.completeTicket)
 module.exports = router
