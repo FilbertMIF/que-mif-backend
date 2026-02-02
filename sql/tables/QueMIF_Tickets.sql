@@ -1,0 +1,23 @@
+SELECT TOP (1000) [TicketID]
+      ,[TicketNumber]
+      ,[ServiceID]
+      ,[Status]
+      ,[CurrentCounterID]
+      ,[ServedByUserID]
+      ,[QueueDate]
+      ,[CreatedAt]
+      ,[CalledAt]
+      ,[StartedAt]
+      ,[FinishedAt]
+      ,[Note]
+      ,[PlateNumber]
+      ,[HoldAt]
+      ,[HoldReason]
+      ,[TotalHoldDuration]
+      ,[AgreementNo]
+      ,[CustomerName]
+      ,[BranchID]
+  FROM [BIIFDBPROD2].[dbo].[QueMIF_Tickets]
+
+TicketID	TicketNumber	ServiceID	Status	CurrentCounterID	ServedByUserID	QueueDate	CreatedAt	CalledAt	StartedAt	FinishedAt	Note	PlateNumber	HoldAt	HoldReason	TotalHoldDuration	AgreementNo	CustomerName	BranchID
+1	A001	1	DONE	NULL	NULL	2026-01-30	2026-01-30 11:26:19.063	2026-01-30 11:26:21.370	2026-01-30 11:26:25.903	2026-01-30 11:26:33.217	NULL	NULL	NULL	NULL	0	NULL	Mark	999

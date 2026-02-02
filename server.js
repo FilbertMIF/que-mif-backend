@@ -1,9 +1,9 @@
 require('dotenv').config()
 
 const http = require('http')
-const app = require('./app')
-const db = require('./config/db')
-const { initSocket } = require('./socket')
+const app = require('./src/app')
+const db = require('./src/config/db')
+const { initSocket } = require('./src/socket')
 
 db.poolPromise
   .then(pool => pool.request().query('select 1'))

@@ -3,7 +3,7 @@ const { poolPromise } = require('../config/db')
 const { emitDisplayUpdate } = require('../socket')
 const { logActivity } = require('../utils/activityLogger')
 const QRCode = require('qrcode')
-
+const QRCodeLinkPrefix = process.env.QR_CODE_LINK_PREFIX
 // Tickets
 exports.insertTicket = async (req, res) => {
     const {
@@ -41,59 +41,13 @@ exports.insertTicket = async (req, res) => {
             NPKLogin,
             Payload: req.body
         })
-
-        const url = `http://localhost:3000/customer/${TicketID}`
+        const url = `${QRCodeLinkPrefix + TicketID}`
         const QrCode = await QRCode.toDataURL(url)
 
         response.success(res, {
             TicketID,
             TicketNumber,
             QrCode
-        })
-    } catch (err) {
-        response.fail(res, 'DB_ERROR', 500, err.message)
-    }
-}
-
-exports.getTickets = async (req, res) => {
-    const {
-        CurrentPage = 1,
-        PageSize = 10,
-        TicketNumber,
-        Status,
-        CurrentCounterID,
-        ServedByUserId,
-        QueueDate,
-        PlateNumber,
-        AgreementNo,
-        CustomerName,
-        BranchID,
-    } = req.query
-
-    try {
-        const pool = await poolPromise
-        const request = pool.request()
-
-        request.input('CurrentPage', Number(CurrentPage))
-        request.input('PageSize', Number(PageSize))
-        request.input('TicketNumber', TicketNumber || null)
-        request.input('Status', Status || null)
-        request.input('CurrentCounterID', CurrentCounterID ? Number(CurrentCounterID) : null)
-        request.input('ServedByUserId', ServedByUserId ? Number(ServedByUserId) : null)
-        request.input('QueueDate', QueueDate || null)
-        request.input('PlateNumber', PlateNumber || null)
-        request.input('AgreementNo', AgreementNo || null)
-        request.input('CustomerName', CustomerName || null)
-        request.input('BranchID', BranchID || null)
-
-        const result = await request.execute('sp_QueMIF_GetTickets')
-        response.success(res, {
-            Data: result.recordsets[0],
-            pagination: {
-                currentPage: Number(CurrentPage),
-                pageSize: Number(PageSize),
-                total: result.recordsets[1][0].Total
-            }
         })
     } catch (err) {
         response.fail(res, 'DB_ERROR', 500, err.message)
@@ -128,6 +82,39 @@ exports.callTicket = async (req, res) => {
 
         response.success(res, {
             Data: result.recordsets[0][0]
+        })
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+
+exports.noShowTicket = async (req, res) => {
+    const TicketID = req.params.id
+    const { BranchIDLogin, NPKLogin } = req.body
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('TicketID', TicketID)
+
+        const result = await request.execute('sp_QueMIF_NoShowTicket')
+
+        emitDisplayUpdate(BranchIDLogin, {
+            action: 'display-update',
+        })
+
+        logActivity({
+            Action: 'NOSHOW_TICKET',
+            Entity: 'TICKET',
+            EntityID: TicketID,
+            BranchIDLogin,
+            NPKLogin,
+            Payload: req.body
+        })
+
+
+        response.success(res, {
+            Affected: result.recordsets[0][0].Affected
         })
     } catch (err) {
         response.fail(res, 'DB_ERROR', 500, err.message)
@@ -267,3 +254,92 @@ exports.completeTicket = async (req, res) => {
     }
 }
 
+exports.getTickets = async (req, res) => {
+    const {
+        CurrentPage = 1,
+        PageSize = 10,
+        TicketID,
+        TicketNumber,
+        Status,
+        CurrentCounterID,
+        ServedByUserId,
+        StartQueueDate,
+        EndQueueDate,
+        PlateNumber,
+        AgreementNo,
+        CustomerName,
+        BranchID,
+    } = req.query
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('CurrentPage', Number(CurrentPage))
+        request.input('PageSize', Number(PageSize))
+        request.input('TicketID', TicketID ? Number(TicketID) : null)
+        request.input('TicketNumber', TicketNumber || null)
+        request.input('Status', Status || null)
+        request.input('CurrentCounterID', CurrentCounterID ? Number(CurrentCounterID) : null)
+        request.input('ServedByUserId', ServedByUserId ? Number(ServedByUserId) : null)
+        request.input('StartQueueDate', StartQueueDate || null)
+        request.input('EndQueueDate', EndQueueDate || null)
+        request.input('PlateNumber', PlateNumber || null)
+        request.input('AgreementNo', AgreementNo || null)
+        request.input('CustomerName', CustomerName || null)
+        request.input('BranchID', BranchID || null)
+
+        const result = await request.execute('sp_QueMIF_GetTickets')
+        response.success(res, {
+            Data: result.recordsets[0],
+            pagination: {
+                currentPage: Number(CurrentPage),
+                pageSize: Number(PageSize),
+                total: result.recordsets[1][0].Total
+            }
+        })
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+
+exports.getTicketsSettlement = async (req, res) => {
+    const {
+        CurrentPage = 1,
+        PageSize = 10,
+        TicketID,
+        Result,
+        UserID,
+        CounterID,
+        StartDate,
+        EndDate,
+        BranchID
+    } = req.query
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('CurrentPage', Number(CurrentPage))
+        request.input('PageSize', Number(PageSize))
+        request.input('TicketID', TicketID || null)
+        request.input('Result', Result || null)
+        request.input('UserID', UserID ? Number(UserID) : null)
+        request.input('CounterID', CounterID || null)
+        request.input('StartDate', StartDate || null)
+        request.input('EndDate', EndDate || null)
+        request.input('BranchID', BranchID || null)
+
+        const result = await request.execute('sp_QueMIF_GetTicketsSettlement')
+        response.success(res, {
+            Data: result.recordsets[0],
+            pagination: {
+                currentPage: Number(CurrentPage),
+                pageSize: Number(PageSize),
+                total: result.recordsets[1][0].Total
+            }
+        })
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
