@@ -1,57 +1,35 @@
 USE [BIIFDBPROD2]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_QueMIF_UpdateService]    Script Date: 30/01/2026 16:32:56 ******/
+/****** Object:  StoredProcedure [dbo].[sp_QueMIF_UpdateService]    Script Date: 02/02/2026 12:02:22 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER PROCEDURE [dbo].[sp_QueMIF_UpdateCounter]
-    @CounterID INT,
+ALTER PROCEDURE [dbo].[sp_QueMIF_UpdateService]
+    @ServiceID INT,
+    @Code VARCHAR(10) = NULL,
     @Name VARCHAR(255) = NULL,
-    @IsActive BIT = NULL,
-    @BranchID INT = NULL,
-    @NPK VARCHAR(10) = NULL
+    @Description VARCHAR(500) = NULL,
+    @IsActive BIT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
     IF NOT EXISTS (
-        SELECT 1
-        FROM QueMIF_Counters
-        WHERE CounterID = @CounterID
+        SELECT 1 FROM QueMIF_Services WHERE ServiceID = @ServiceID
     )
     BEGIN
-        THROW 50002, 'Counter not found', 1;
+        THROW 50101, 'Service not found', 1;
     END
 
-    IF @BranchID IS NOT NULL
-       AND NOT EXISTS (
-            SELECT 1
-            FROM Branch
-            WHERE BranchID = @BranchID
-       )
-    BEGIN
-        THROW 50001, 'Invalid BranchID', 1;
-    END
-
-    IF @NPK IS NOT NULL
-       AND EXISTS (
-           SELECT 1
-           FROM QueMIF_Tickets
-           WHERE CurrentCounterID = @CounterID
-             AND Status = 'ON SERVE'
-       )
-    BEGIN
-        THROW 50003, 'Cannot change NPK while counter is serving a ticket', 1;
-    END
-
-    UPDATE QueMIF_Counters
+    UPDATE QueMIF_Services
     SET
-        Name     = COALESCE(@Name, Name),
+        Code = COALESCE(@Code, Code),
+        Name = COALESCE(@Name, Name),
+        Description = COALESCE(@Description, Description),
         IsActive = COALESCE(@IsActive, IsActive),
-        BranchID = COALESCE(@BranchID, BranchID),
-        NPK      = COALESCE(@NPK, NPK)
-    WHERE CounterID = @CounterID;
+        UpdatedAt = GETDATE()
+    WHERE ServiceID = @ServiceID;
 
     SELECT @@ROWCOUNT AS Affected;
 END

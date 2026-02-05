@@ -63,7 +63,7 @@ exports.getCounterInfo = async (req, res) => {
 }
 
 exports.getAllCountersByBranch = async (req, res) => {
-    const { BranchID, QueueDate } = req.query
+    const { BranchID, QueueDate, PageSize, CurrentPage } = req.query
 
     try {
         const pool = await poolPromise
@@ -71,6 +71,8 @@ exports.getAllCountersByBranch = async (req, res) => {
 
         request.input('BranchID', BranchID)
         request.input('QueueDate', QueueDate || null)
+        request.input('PageSize', PageSize || 10)
+        request.input('CurrentPage', CurrentPage || 1)
 
         const result = await request.execute('sp_QueMIF_GetAllCountersByBranch')
 

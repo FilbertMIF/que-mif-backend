@@ -56,7 +56,7 @@ exports.insertTicket = async (req, res) => {
 
 exports.callTicket = async (req, res) => {
     const TicketID = req.params.id
-    const { BranchIDLogin, NPKLogin } = req.body
+    const { BranchIDLogin, NPKLogin, CounterID } = req.body
 
 
     try {
@@ -64,6 +64,7 @@ exports.callTicket = async (req, res) => {
         const request = pool.request()
 
         request.input('TicketID', TicketID)
+        request.input('CounterID', CounterID)
 
         const result = await request.execute('sp_QueMIF_CallTicket')
 
