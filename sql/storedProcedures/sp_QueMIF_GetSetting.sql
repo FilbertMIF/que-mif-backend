@@ -8,5 +8,6 @@ GO
 ALTER PROCEDURE [dbo].[sp_QueMIF_GetSetting]
 AS
 BEGIN
-    SELECT * FROM QueMIF_Settings
+    SELECT * FROM QueMIF_Settings ORDER BY SettingID
 END
+

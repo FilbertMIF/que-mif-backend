@@ -1,0 +1,36 @@
+USE [BIIFDBPROD2]
+GO
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[QueMIF_Users]') AND type in (N'U'))
+BEGIN
+CREATE TABLE [dbo].[QueMIF_Users](
+	[UserID] [int] IDENTITY(1,1) NOT NULL,
+	[Username] [varchar](50) NOT NULL,
+	[FullName] [varchar](100) NULL,
+	[Role] [varchar](20) NOT NULL, -- 'ADMIN', 'CS'
+	[BranchID] [int] NULL,
+	[IsActive] [bit] NOT NULL,
+    [NPK] [varchar](20) NULL,
+	[CreatedAt] [datetime] NULL,
+	[UpdatedAt] [datetime] NULL,
+ CONSTRAINT [PK_QueMIF_Users] PRIMARY KEY CLUSTERED 
+(
+	[UserID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+ CONSTRAINT [UQ_QueMIF_Users_Username] UNIQUE NONCLUSTERED 
+(
+	[Username] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+ALTER TABLE [dbo].[QueMIF_Users] ADD  CONSTRAINT [DF_QueMIF_Users_IsActive]  DEFAULT ((1)) FOR [IsActive]
+
+ALTER TABLE [dbo].[QueMIF_Users] ADD  CONSTRAINT [DF_QueMIF_Users_CreatedAt]  DEFAULT (getdate()) FOR [CreatedAt]
+END
+GO

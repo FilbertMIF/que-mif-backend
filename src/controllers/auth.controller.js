@@ -28,9 +28,37 @@ const login = async (req, res) => {
         const data = apiResponse.data;
 
         if (data.Login === 'IsValid' && data.Retval === 'Success') {
-            // Success! We can return the data to the frontend
-            // You might want to wrap this in your own JWT or just forward the relevant info
-            return response.success(res, data, 'Login Successful');
+            // Check Local User Table
+            try {
+                const { poolPromise } = require('../config/db')
+                const pool = await poolPromise
+                const request = pool.request()
+                request.input('Username', Username)
+
+                const userResult = await request.execute('sp_QueMIF_GetUserByUsername')
+                const localUser = userResult.recordsets[0][0]
+
+                if (localUser) {
+                    // Combine External Data with Local Role/Permissions
+                    const combinedData = {
+                        ...data,
+                        User: {
+                            Username: localUser.Username,
+                            FullName: localUser.FullName || data.FullName, // Prefer local or external?
+                            Role: localUser.Role,
+                            BranchID: localUser.BranchID,
+                            NPK: localUser.NPK
+                        }
+                    }
+                    return response.success(res, combinedData, 'Login Successful');
+                } else {
+                    return response.fail(res, 'User not registered in Queue System', 403);
+                }
+
+            } catch (dbErr) {
+                console.error('DB Error Checking User:', dbErr);
+                return response.fail(res, 'Database Error', 500);
+            }
         } else {
             return response.fail(res, data.Message || 'Invalid Credentials', 401);
         }

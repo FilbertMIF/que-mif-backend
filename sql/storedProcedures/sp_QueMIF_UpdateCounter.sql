@@ -1,6 +1,6 @@
 USE [BIIFDBPROD2]
 GO
-/****** Object:  StoredProcedure [dbo].[sp_QueMIF_UpdateCounter]    Script Date: 30/01/2026 16:32:56 ******/
+/****** Object:  StoredProcedure [dbo].[sp_QueMIF_UpdateCounter]    Script Date: 05/02/2026 17:02:31 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -43,6 +43,17 @@ BEGIN
        )
     BEGIN
         THROW 50003, 'Cannot change NPK while counter is serving a ticket', 1;
+    END
+
+	 IF @NPK IS NOT NULL
+       AND EXISTS (
+           SELECT 1
+           FROM QueMIF_Counters
+           WHERE NPK = @NPK
+             AND CounterID <> @CounterID
+       )
+    BEGIN
+        THROW 50004, 'NPK already assigned to another counter', 1;
     END
 
     UPDATE QueMIF_Counters

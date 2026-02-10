@@ -128,3 +128,41 @@ exports.deleteService = async (req, res) => {
         response.fail(res, 'DB_ERROR', 500, err.message)
     }
 }
+
+exports.getBranchServices = async (req, res) => {
+    const BranchID = req.params.branchId
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('BranchID', BranchID)
+
+        const result = await request.execute('sp_QueMIF_GetBranchServices')
+
+        response.success(res, result.recordsets[0])
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+
+exports.updateBranchService = async (req, res) => {
+    const BranchID = req.params.branchId
+    const { ServiceID, IsActive } = req.body
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('BranchID', BranchID)
+        request.input('ServiceID', ServiceID)
+        request.input('IsActive', IsActive)
+
+        await request.execute('sp_QueMIF_UpdateBranchService')
+
+        response.success(res, null, 'Branch service updated')
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+

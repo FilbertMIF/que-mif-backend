@@ -21,8 +21,10 @@ BEGIN
 
     UPDATE QueMIF_Settings
     SET
-		SettingValue = @SettingValue
+		SettingValue = @SettingValue,
+		UpdatedAt = GETDATE()
     WHERE SettingID = @SettingID;
 
     SELECT @@ROWCOUNT AS Affected;
 END
+

@@ -26,8 +26,14 @@ exports.insertTicket = async (req, res) => {
         request.input('CustomerName', CustomerName || null)
 
         const result = await request.execute('sp_QueMIF_InsertTicket')
-        const TicketID = result.recordsets[0][0].TicketID
-        const TicketNumber = result.recordsets[0][0].TicketNumber
+        const row = result.recordsets[0][0]
+
+        const TicketID = row.TicketID
+        const TicketNumber = row.TicketNumber
+        const PlateNo = row.PlateNumber
+        const ServiceName = row.ServiceName
+        const QueuePosition = row.QueuePosition
+        const WaktuAmbil = row.WaktuAmbil
 
         emitDisplayUpdate(BranchIDLogin, {
             action: 'display-update',
@@ -41,18 +47,24 @@ exports.insertTicket = async (req, res) => {
             NPKLogin,
             Payload: req.body
         })
+
         const url = `${QRCodeLinkPrefix + TicketID}`
         const QrCode = await QRCode.toDataURL(url)
 
         response.success(res, {
             TicketID,
             TicketNumber,
+            PlateNumber: PlateNo,
+            ServiceName,
+            QueuePosition,
+            WaktuAmbil,
             QrCode
         })
     } catch (err) {
         response.fail(res, 'DB_ERROR', 500, err.message)
     }
 }
+
 
 exports.callTicket = async (req, res) => {
     const TicketID = req.params.id

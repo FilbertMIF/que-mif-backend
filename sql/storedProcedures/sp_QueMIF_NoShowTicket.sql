@@ -31,7 +31,7 @@ BEGIN
 		HoldDuration)
 	 SELECT
         TicketID,
-        'NOSHOW',
+        'NO SHOW',
         ServedByUserID,
         CurrentCounterID,
         NULL,
@@ -43,7 +43,7 @@ BEGIN
 
     UPDATE QueMIF_Tickets
     SET
-        Status = 'NOSHOW',
+        Status = 'NO SHOW',
         Note = '',
         FinishedAt = GETDATE(),
         CurrentCounterID = NULL,

@@ -14,15 +14,16 @@ exports.getKPIDashboard = async (req, res) => {
 
         const result = await request.execute('sp_QueMIF_GetKPIDashboard')
 
-        const data = result.recordsets[0][0]
+        const data = result.recordsets[0][0] || {}
 
         response.success(res, {
-            TotalAntrian: data.TotalAntrian,
-            AvgTimeService: parseFloat(data.AvgTimeService.toFixed(2)),
-            NoShowRate: parseFloat(data.NoShowRate.toFixed(2)),
-            TotalComplete: data.TotalComplete,
-            TotalCancel: data.TotalCancel,
-            TotalNoShow: data.TotalNoShow
+            TotalAntrian: data.TotalAntrian || 0,
+            AvgTimeService: data.AvgTimeService ? parseFloat(data.AvgTimeService.toFixed(2)) : 0,
+            NoShowRate: data.NoShowRate ? parseFloat(data.NoShowRate.toFixed(2)) : 0,
+            TotalComplete: data.TotalComplete || 0,
+            TotalCancel: data.TotalCancel || 0,
+            TotalNoShow: data.TotalNoShow || 0,
+            TotalServing: data.TotalServing || 0
         })
     } catch (err) {
         response.fail(res, 'DB_ERROR', 500, err.message)
@@ -87,6 +88,41 @@ exports.getAllCountersByBranch = async (req, res) => {
         }))
 
         response.success(res, counters)
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+exports.getHourlyStats = async (req, res) => {
+    const { BranchID, QueueDate } = req.query
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('BranchID', BranchID)
+        request.input('QueueDate', QueueDate || null)
+
+        const result = await request.execute('sp_QueMIF_GetHourlyStats')
+
+        response.success(res, result.recordsets[0])
+    } catch (err) {
+        response.fail(res, 'DB_ERROR', 500, err.message)
+    }
+}
+
+exports.getServiceStats = async (req, res) => {
+    const { BranchID, QueueDate } = req.query
+
+    try {
+        const pool = await poolPromise
+        const request = pool.request()
+
+        request.input('BranchID', BranchID)
+        request.input('QueueDate', QueueDate || null)
+
+        const result = await request.execute('sp_QueMIF_GetServiceStats')
+
+        response.success(res, result.recordsets[0])
     } catch (err) {
         response.fail(res, 'DB_ERROR', 500, err.message)
     }
